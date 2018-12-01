@@ -8,13 +8,16 @@ import           Util.IO
 parseFrequency :: T.Text -> Int
 parseFrequency t =
     let freq = read . T.unpack . T.tail $ t
-    in  case (T.head t) of
+    in  case T.head t of
             '+' -> freq
             '-' -> -1 * freq
 
-main :: IO ()
-main = do
+getFrequencies :: IO [Int]
+getFrequencies = do
     input <- T.pack
-        <$> readFile "/home/sebastian/git/aoc2018/src/Day1/Problem1.input"
-    let frequencies = filter (not . T.null) $ T.splitOn "\n" input
-    print . sum . fmap parseFrequency $ frequencies
+        <$> readFile "/home/sebastian/git/aoc2018/src/Day1/Day1.input"
+    let nonEmptyFreqs = filter (not . T.null) $ T.splitOn "\n" input
+    return $ fmap parseFrequency nonEmptyFreqs
+
+main :: IO ()
+main = getFrequencies >>= print . sum
