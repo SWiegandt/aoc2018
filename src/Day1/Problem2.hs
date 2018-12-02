@@ -9,19 +9,15 @@ type Frequencies = [Int]
 type Sum = Int
 type FrequencyState = (S.Set Sum, Frequencies, Sum)
 
-isRepeated :: State FrequencyState Bool
-isRepeated = do
-    (visited, _, sum) <- get
-    return $ sum `S.member` visited
+isRepeated :: FrequencyState -> Bool
+isRepeated (visited, _, sum) = sum `S.member` visited
 
 insertSum :: State FrequencyState ()
-insertSum = do
-    (visited, freq : freqs, sum) <- get
-    let sum' = sum + freq
-    put (S.insert sum visited, freqs, sum')
+insertSum = modify $ \(visited, freq : freqs, sum) ->
+    (S.insert sum visited, freqs, sum + freq)
 
 findRepeated :: State FrequencyState ()
-findRepeated = insertSum `untilM_` isRepeated
+findRepeated = insertSum `untilM_` (isRepeated <$> get)
 
 main :: IO ()
 main = do
