@@ -1,15 +1,15 @@
+{-# LANGUAGE TupleSections #-}
 module Day2.Problem2 where
 
 import           Util.IO
+import           Data.List
+import           Data.Maybe
 
 findDuplicate :: [String] -> (String, String)
 findDuplicate (search : others) =
-    let similar = dropWhile
-            ((> 1) . length . filter not . zipWith (==) search)
-            others
-    in  case similar of
-            []        -> findDuplicate others
-            (res : _) -> (search, res)
+    let similar =
+            find ((<= 1) . length . filter id . zipWith (/=) search) others
+    in  maybe (findDuplicate others) (search, ) similar
 
 main :: IO ()
 main = do
