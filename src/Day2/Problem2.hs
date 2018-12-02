@@ -1,7 +1,6 @@
 module Day2.Problem2 where
 
 import           Util.IO
-import           Control.Applicative
 
 findDuplicate :: [String] -> (String, String)
 findDuplicate (search : others) =
