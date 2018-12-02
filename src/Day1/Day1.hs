@@ -1,4 +1,4 @@
-module Day1 where
+module Day1.Day1 where
 
 import           Util.IO
 import qualified Day1.Problem1                 as P1
