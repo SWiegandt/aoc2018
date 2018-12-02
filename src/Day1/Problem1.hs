@@ -3,7 +3,6 @@
 module Day1.Problem1 where
 
 import qualified Data.Text                     as T
-import           Util.IO
 
 parseFrequency :: T.Text -> Int
 parseFrequency t =
