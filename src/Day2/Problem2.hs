@@ -1,4 +1,5 @@
 {-# LANGUAGE TupleSections #-}
+
 module Day2.Problem2 where
 
 import           Util.IO

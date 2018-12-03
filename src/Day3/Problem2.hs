@@ -6,9 +6,7 @@ import qualified Data.Set                      as S
 
 main :: IO ()
 main = do
-    sheet <- P1.makeSheet <$> P1.getPatches
-    let overlapping =
-            S.fromList . concat . M.elems . M.filter ((> 1) . length) $ sheet
-    let notOverlapping =
-            S.fromList . concat . M.elems . M.filter ((== 1) . length) $ sheet
-    print . head . S.toList $ S.difference notOverlapping overlapping
+        sheet <- M.elems . P1.makeSheet <$> P1.getPatches
+        let all         = S.fromList . concat $ sheet
+        let overlapping = S.fromList . concat . filter ((> 1) . length) $ sheet
+        print . head . S.toList $ all S.\\ overlapping

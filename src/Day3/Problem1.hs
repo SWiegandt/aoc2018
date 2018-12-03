@@ -1,5 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE OverloadedStrings #-}
+
 module Day3.Problem1 where
 
 import           Util.IO
@@ -15,7 +15,7 @@ parsePatch s =
     in  Patch { .. }
 
 updateSheet :: Patch -> M.Map (Int, Int) [Int] -> M.Map (Int, Int) [Int]
-updateSheet patch@Patch {..} sheet =
+updateSheet Patch {..} sheet =
     let coordinates =
             [ (x + left, y + top)
             | x <- [0 .. width - 1]
