@@ -1,11 +1,10 @@
 module Day2.Problem1 where
 
 import           Util.IO
-import           Util.Map
 import qualified Data.Map.Strict               as M
 
 numberOfInstances :: String -> M.Map Char Int
-numberOfInstances = foldr increaseByOne M.empty
+numberOfInstances = foldr (\k -> M.insertWith (+) k 1) M.empty
 
 main :: IO ()
 main = do

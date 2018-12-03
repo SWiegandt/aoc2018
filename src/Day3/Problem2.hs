@@ -11,4 +11,4 @@ main = do
             S.fromList . concat . M.elems . M.filter ((> 1) . length) $ sheet
     let notOverlapping =
             S.fromList . concat . M.elems . M.filter ((== 1) . length) $ sheet
-    print (S.difference notOverlapping overlapping)
+    print . head . S.toList $ S.difference notOverlapping overlapping
