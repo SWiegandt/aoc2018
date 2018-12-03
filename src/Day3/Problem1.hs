@@ -4,9 +4,7 @@ module Day3.Problem1 where
 
 import           Util.IO
 import qualified Data.List.Split               as S
-import           Data.Char
-import qualified Data.Map.Strict                      as M
-import           Control.Monad
+import qualified Data.Map.Strict               as M
 
 data Patch = Patch { patchId :: Int, left :: Int, top :: Int, width :: Int, height :: Int } deriving Show
 

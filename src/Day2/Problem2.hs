@@ -3,7 +3,6 @@ module Day2.Problem2 where
 
 import           Util.IO
 import           Data.List
-import           Data.Maybe
 
 findDuplicate :: [String] -> (String, String)
 findDuplicate (search : others) =
