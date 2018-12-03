@@ -8,7 +8,7 @@ import           Data.Char
 import qualified Data.Map                      as M
 import           Control.Monad
 
-data Patch = Patch { id :: Int, left :: Int, top :: Int, width :: Int, height :: Int } deriving Show
+data Patch = Patch { patchId :: Int, left :: Int, top :: Int, width :: Int, height :: Int } deriving Show
 
 parsePatch :: String -> Patch
 parsePatch s =
@@ -24,20 +24,22 @@ parsePatch s =
         id   = read . takeWhile isDigit . tail $ s
     in  Patch id (head coordinates) (last coordinates) (head size) (last size)
 
-updateSheet :: Patch -> M.Map (Int, Int) Int -> M.Map (Int, Int) Int
+updateSheet :: Patch -> M.Map (Int, Int) [Int] -> M.Map (Int, Int) [Int]
 updateSheet patch sheet =
     let coordinates =
             [ (x + left patch, y + top patch)
             | x <- [0 .. width patch - 1]
             , y <- [0 .. height patch - 1]
             ]
-    in  foldr increaseByOne sheet coordinates
+    in  foldr (M.alter (Just . maybe [patchId patch] (patchId patch :)))
+              sheet
+              coordinates
 
 getPatches :: IO [Patch]
 getPatches = map parsePatch . lines <$> getInput 3
 
-makeSheet :: [Patch] -> M.Map (Int, Int) Int
+makeSheet :: [Patch] -> M.Map (Int, Int) [Int]
 makeSheet = foldr updateSheet M.empty
 
 main :: IO ()
-main = length . filter (> 1) . M.elems . makeSheet <$> getPatches >>= print
+main = M.size . M.filter ((> 1) . length) . makeSheet <$> getPatches >>= print
