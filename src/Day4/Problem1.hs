@@ -67,4 +67,4 @@ main = do
     (guard, sleepList) <- maximumBy (compare `on` length . snd) <$> sleeperMap
     let mostSleptMinute =
             head . maximumBy (compare `on` length) $ group (sort sleepList)
-    print $ guard * mostSleptMinute
+    printWithTime $ guard * mostSleptMinute

@@ -12,4 +12,4 @@ main = do
         let removedGroups = map
                     (\letter -> filter ((/= letter) . toLower) input)
                     ['a' .. 'z']
-        print . minimum $ map (length . P1.removeReverses) removedGroups
+        printWithTime . minimum $ map (length . P1.removeReverses) removedGroups

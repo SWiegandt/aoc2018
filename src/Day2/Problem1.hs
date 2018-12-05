@@ -9,4 +9,4 @@ numberOfInstances = foldr (\k -> M.insertWith (+) k 1) M.empty
 main :: IO ()
 main = do
     instances <- map (M.elems . numberOfInstances) . lines <$> getInput 2
-    print . product . map (\n -> length (filter (n `elem`) instances)) $ [2, 3]
+    printWithTime . product . map (\n -> length (filter (n `elem`) instances)) $ [2, 3]

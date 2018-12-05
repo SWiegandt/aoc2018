@@ -30,4 +30,4 @@ makeSheet :: [Patch] -> M.Map (Int, Int) [Int]
 makeSheet = foldr updateSheet M.empty
 
 main :: IO ()
-main = getPatches >>= print . M.size . M.filter ((> 1) . length) . makeSheet
+main = getPatches >>= printWithTime . M.size . M.filter ((> 1) . length) . makeSheet

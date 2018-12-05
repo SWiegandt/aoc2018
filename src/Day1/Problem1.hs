@@ -10,4 +10,4 @@ getFrequencies :: IO [Int]
 getFrequencies = map parseFrequency . filter (/= "") . lines <$> getInput 1
 
 main :: IO ()
-main = getFrequencies >>= print . sum
+main = getFrequencies >>= printWithTime . sum

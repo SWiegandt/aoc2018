@@ -14,4 +14,5 @@ removeReverses :: String -> String
 removeReverses = foldr removeReverse ""
 
 main :: IO ()
-main = getInput 5 >>= print . length . removeReverses . takeWhile (not . isSpace)
+main = getInput 5 >>= printWithTime . length . removeReverses . takeWhile
+    (not . isSpace)

@@ -4,6 +4,7 @@ import qualified Day1.Problem1                 as P1
 import           Control.Monad.Trans.State.Strict
 import           Control.Monad.Loops
 import qualified Data.Set                      as S
+import           Util.IO
 
 type Frequencies = [Int]
 type Sum = Int
@@ -23,4 +24,4 @@ main :: IO ()
 main = do
     frequencies <- cycle <$> P1.getFrequencies
     let (_, _, repeated) = execState findRepeated (S.empty, frequencies, 0)
-    print repeated
+    printWithTime repeated

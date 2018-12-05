@@ -14,7 +14,7 @@ findDuplicate (search : others) =
 main :: IO ()
 main = do
     input <- lines <$> getInput 2
-    print
+    printWithTime
         . map fst
         . filter (uncurry (==))
         . uncurry zip
