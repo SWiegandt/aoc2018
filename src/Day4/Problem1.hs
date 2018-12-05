@@ -8,7 +8,7 @@ import           Data.List
 import           Control.Monad
 import qualified Data.Map                      as M
 import           Control.Monad.Trans.State.Strict
-import           Data.Function
+import           Data.Ord
 
 data Event = Start Int | FallAsleep | WakeUp deriving Show
 data GuardEvent = GuardEvent { year :: Int, month :: Int, day :: Int, hour :: Int, minute :: Int, event :: Event } deriving Show
@@ -64,7 +64,7 @@ sleeperMap = do
 
 main :: IO ()
 main = do
-    (guard, sleepList) <- maximumBy (compare `on` length . snd) <$> sleeperMap
+    (guard, sleepList) <- maximumBy (comparing $ length . snd) <$> sleeperMap
     let mostSleptMinute =
-            head . maximumBy (compare `on` length) $ group (sort sleepList)
+            head . maximumBy (comparing length) $ group (sort sleepList)
     printWithTime $ guard * mostSleptMinute
