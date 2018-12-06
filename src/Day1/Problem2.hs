@@ -13,15 +13,15 @@ type FrequencyState = (S.Set Sum, Frequencies, Sum)
 isRepeated :: FrequencyState -> Bool
 isRepeated (visited, _, sum) = sum `S.member` visited
 
-insertSum :: State FrequencyState ()
-insertSum = modify $ \(visited, freq : freqs, sum) ->
+insertSum :: FrequencyState -> FrequencyState
+insertSum (visited, freq : freqs, sum) =
     (S.insert sum visited, freqs, sum + freq)
-
-findRepeated :: State FrequencyState ()
-findRepeated = insertSum `untilM_` (isRepeated <$> get)
 
 main :: IO ()
 main = do
     frequencies <- cycle <$> P1.getFrequencies
-    let (_, _, repeated) = execState findRepeated (S.empty, frequencies, 0)
+    let (_, _, repeated) : _ =
+            dropWhile (not . isRepeated)
+                . iterate insertSum
+                $ (S.empty, frequencies, 0)
     printWithTime repeated

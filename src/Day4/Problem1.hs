@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Day4.Problem1 where
@@ -9,6 +10,7 @@ import           Control.Monad
 import qualified Data.Map                      as M
 import           Control.Monad.Trans.State.Strict
 import           Data.Ord
+import           Data.Maybe
 
 data Event = Start Int | FallAsleep | WakeUp deriving Show
 data GuardEvent = GuardEvent { year :: Int, month :: Int, day :: Int, hour :: Int, minute :: Int, event :: Event } deriving Show
@@ -40,18 +42,22 @@ parseEvent s =
                 (read minute)
                 WakeUp
 
-readEvent :: GuardEvent -> State (GuardState, M.Map Int [Int]) ()
-readEvent GuardEvent {..} = do
-    (GuardState guard m, map) <- get
-    case event of
-        Start g    -> put (GuardState g minute, map)
-        FallAsleep -> put (GuardState guard minute, map)
-        WakeUp ->
-            let minutes = [m .. minute - 1]
-            in  put
-                    ( GuardState guard minute
-                    , foldr (\n -> M.insertWith (++) guard [n]) map minutes
-                    )
+readEvent
+    :: (GuardState, M.Map Int [Int])
+    -> GuardEvent
+    -> (GuardState, M.Map Int [Int])
+readEvent (GuardState guard m, map) GuardEvent {..} = case event of
+    Start g    -> (GuardState g minute, map)
+    FallAsleep -> (GuardState guard minute, map)
+    WakeUp ->
+        let minutes = [m .. minute - 1]
+        in  ( GuardState guard minute
+            , foldr (\n -> M.adjust (n :) guard) map minutes
+            )
+
+getGuard :: Event -> Maybe Int
+getGuard (Start n) = Just n
+getGuard _         = Nothing
 
 sleeperMap :: IO [(Int, [Int])]
 sleeperMap = do
@@ -59,8 +65,12 @@ sleeperMap = do
     return
         . M.toList
         . snd
-        . execState (mapM_ readEvent input)
-        $ (GuardState (-1) (-1), M.empty)
+        . foldl'
+              readEvent
+              ( GuardState (-1) (-1)
+              , M.fromList . map (, []) . mapMaybe (getGuard . event) $ input
+              )
+        $ input
 
 main :: IO ()
 main = do
