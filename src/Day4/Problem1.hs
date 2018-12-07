@@ -52,7 +52,7 @@ readEvent (GuardState guard m, map) GuardEvent {..} = case event of
     WakeUp ->
         let minutes = [m .. minute - 1]
         in  ( GuardState guard minute
-            , foldr (\n -> M.adjust (n :) guard) map minutes
+            , foldr (\n -> M.insertWith (++) guard [n]) map minutes
             )
 
 getGuard :: Event -> Maybe Int
@@ -65,11 +65,7 @@ sleeperMap = do
     return
         . M.toList
         . snd
-        . foldl'
-              readEvent
-              ( GuardState (-1) (-1)
-              , M.fromList . map (, []) . mapMaybe (getGuard . event) $ input
-              )
+        . foldl' readEvent (GuardState (-1) (-1), M.empty)
         $ input
 
 main :: IO ()
