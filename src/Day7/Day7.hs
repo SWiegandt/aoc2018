@@ -2,18 +2,17 @@ module Day7.Day7 where
 
 import           Util.IO
 import           Data.Ord
-import qualified Data.List                     as L
+import           Data.List
 import           Control.Monad
 import           Control.Monad.Trans.State.Strict
-                                         hiding ( state )
 import           Control.Monad.Loops
-import           Data.List.Safe
 import           Data.Maybe
 import           Control.Arrow
+import           Safe
 
 newtype Step = Step { name :: Char } deriving (Show, Eq)
 data Order = Order { from :: Step, to :: Step } deriving (Show, Eq)
-newtype Worker = Worker { state :: Maybe WorkerState }
+newtype Worker = Worker { workerState :: Maybe WorkerState }
 data WorkerState = Working { duration :: Int, step :: Step } deriving (Show, Eq)
 
 parseOrder :: String -> Order
@@ -42,7 +41,7 @@ extractMinimum :: [Order] -> [Worker] -> State ([Step], Int) (Maybe Step)
 extractMinimum orders workers = do
     (steps, duration) <- get
     let minimum =
-            minimumBy (comparing name)
+            minimumByMay (comparing name)
                 . filter (isFirstAvailable orders steps)
                 . filter (not . awaitingWork orders workers)
                 $ steps
@@ -51,7 +50,7 @@ extractMinimum orders workers = do
 
 startWork :: Step -> Worker
 startWork s@(Step name) =
-    let duration = maybe 0 (+ 61) $ L.elemIndex name ['A' .. 'Z']
+    let duration = maybe 0 (+ 61) $ elemIndex name ['A' .. 'Z']
     in  Worker (Just $ Working duration s)
 
 doWork :: Worker -> Worker
@@ -62,7 +61,7 @@ doWork (Worker state) = Worker $ do
 runWorkers :: [Order] -> [Worker] -> State ([Step], Int) Int
 runWorkers orders workers = do
     (steps, duration) <- get
-    let (working, idle) = partition (isJust . state) workers
+    let (working, idle) = partition (isJust . workerState) workers
     let doneWork        = map doWork workers
     case idle of
         []       -> modify (second (+ 1)) >> runWorkers orders doneWork
@@ -79,7 +78,7 @@ getOrders = map parseOrder . filter (not . null) . lines <$> getInput 7
 
 getSteps :: [Order] -> [Step]
 getSteps input =
-    L.nub $ map (\(Order s _) -> s) input ++ map (\(Order _ s) -> s) input
+    nub $ map (\(Order s _) -> s) input ++ map (\(Order _ s) -> s) input
 
 main :: IO ()
 main = do
