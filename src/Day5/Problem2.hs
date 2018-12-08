@@ -4,7 +4,6 @@ import qualified Day5.Problem1                 as P1
 import           Data.Char
 import           Util.IO
 import           Data.List
-import           Data.Ord
 
 main :: IO ()
 main = do

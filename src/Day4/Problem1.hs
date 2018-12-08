@@ -1,4 +1,3 @@
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Day4.Problem1 where
@@ -8,7 +7,6 @@ import           Data.List.Split
 import           Data.List
 import           Control.Monad
 import qualified Data.Map                      as M
-import           Control.Monad.Trans.State.Strict
 import           Data.Ord
 import           Data.Maybe
 
