@@ -87,7 +87,7 @@ main = do
 
     -- Problem 1
     printWithTime
-        . map (maybe '\0' name)
+        . mapMaybe (name <$>)
         . evalState (untilM (extractMinimum input []) (null . fst <$> get))
         $ (steps, 0)
 
