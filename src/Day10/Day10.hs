@@ -41,19 +41,17 @@ parseLight =
 moveLight :: Light -> Light
 moveLight (Light (x, y) v@(vx, vy)) = Light (x + vx, y + vy) v
 
+inBoundingBox :: [Light] -> Light -> Bool
+inBoundingBox lights (Light (x, y) _) =
+    let xMax = maximum . map (fst . position) $ lights
+        yMax = maximum . map (snd . position) $ lights
+    in  abs (x - xMax) < 200 && abs (y - yMax) < 50 -- UGLY :'(
+
 movingSky :: Int -> StateT Sky IO ()
 movingSky n = do
     modify (Sky . map moveLight . lights)
     sky@(Sky lights) <- get
-    let xMax = maximum . map (fst . position) $ lights
-    let yMax = maximum . map (snd . position) $ lights
-    if all
-        (\(Light (x, y) _) -> abs (x - xMax) < 200 && abs (y - yMax) < 50) -- UGLY :'(
-        lights
-    then
-        liftIO $ print sky >> print n
-    else
-        liftIO $ return ()
+    when (all (inBoundingBox lights) lights) $ liftIO (print sky >> print n)
 
 main :: IO ()
 main = do
