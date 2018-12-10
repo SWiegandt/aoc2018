@@ -27,8 +27,10 @@ playRound b@GameBoard {..} (player, marble) = case marble `mod` 23 of
 score :: GameBoard -> (Player, Marble) -> GameBoard
 score GameBoard {..} (player, marble) =
     let active'           = (active - 7) `mod` S.length board
-        (h, scored :<| t) = S.splitAt active' board
-        scores'           = M.insertWith (++) player [marble, scored] scores
+        (h, scored :<| t) = case S.splitAt active' board of
+            seq@(_       , _ :<| _) -> seq
+            (    h' :|> s, _      ) -> (h', S.singleton s)
+        scores' = M.insertWith (++) player [marble, scored] scores
     in  GameBoard (h >< t) scores' active'
 
 main :: IO ()
