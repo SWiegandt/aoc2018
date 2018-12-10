@@ -1,14 +1,61 @@
 module Day10.Day10 where
 
 import           Util.IO
-import qualified Day10.Problem1                as P1
-import qualified Day10.Problem2                as P2
+import           Control.Monad
+import           Data.Char
+import           Control.Monad.Trans.State
+import           Control.Monad.IO.Class
+import           Control.Monad.Loops
+
+data Light = Light { position :: (Int, Int), velocity :: (Int, Int) }
+newtype Sky = Sky { lights :: [Light] }
+
+(<&>) = flip (<$>)
+
+instance Show Sky where
+    show (Sky lights) =
+        let (cx, cy) = avgPos (Sky lights)
+            height   = 10
+            width    = 100
+        in  unlines $ [cy - height .. cy + height] <&> \y ->
+                [cx - width .. cx + width] <&> \x ->
+                    if (x, y) `elem` map position lights then '#' else '.'
+
+avgPos :: Sky -> (Int, Int)
+avgPos (Sky sky) =
+    let fsts = map (fst . position) sky
+        snds = map (snd . position) sky
+    in  (sum fsts `quot` length sky, sum snds `quot` length sky)
+
+getSky :: IO Sky
+getSky = Sky . map parseLight . filter (not . null) . lines <$> getInput 10
+
+parseLight :: String -> Light
+parseLight =
+    (\[x, y, vx, vy] -> Light (x, y) (vx, vy))
+        . map read
+        . filter (all (\c -> isDigit c || c == '-'))
+        . words
+        . map (\c -> if c `elem` ",<>" then ' ' else c)
+
+moveLight :: Light -> Light
+moveLight (Light (x, y) v@(vx, vy)) = Light (x + vx, y + vy) v
+
+movingSky :: Int -> StateT Sky IO ()
+movingSky n = do
+    modify (Sky . map moveLight . lights)
+    sky@(Sky lights) <- get
+    let xMax = maximum . map (fst . position) $ lights
+    let yMax = maximum . map (snd . position) $ lights
+    if all
+        (\(Light (x, y) _) -> abs (x - xMax) < 200 && abs (y - yMax) < 50) -- UGLY :'(
+        lights
+    then
+        liftIO $ print sky >> print n
+    else
+        liftIO $ return ()
 
 main :: IO ()
 main = do
-    problem <- read <$> prompt "Enter problem: " :: IO Int
-
-    case problem of
-        1 -> P1.main
-        2 -> P2.main
-        _ -> error "Problem not yet implemented!"
+    sky <- getSky
+    evalStateT (mapM_ movingSky [1 ..]) sky
