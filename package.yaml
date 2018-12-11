@@ -13,7 +13,7 @@ tests:
 copyright: 2018 Author name here
 maintainer: example@example.com
 dependencies:
-- matrix
+- array
 - safe
 - timeit
 - split

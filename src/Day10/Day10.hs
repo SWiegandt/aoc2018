@@ -5,7 +5,6 @@ import           Control.Monad
 import           Data.Char
 import           Control.Monad.Trans.State
 import           Control.Monad.IO.Class
-import           Control.Monad.Loops
 
 data Light = Light { position :: (Int, Int), velocity :: (Int, Int) }
 newtype Sky = Sky { lights :: [Light] }

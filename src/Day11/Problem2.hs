@@ -1,12 +1,15 @@
 module Day11.Problem2 where
 
 import           Util.IO
-import           Control.Arrow
+import           Data.Ord
 import           Data.List
-import qualified Day11.Problem1                as P1
+import           Day11.Problem1                as P1
 
 main :: IO ()
 main =
   printWithTime
-    . foldl1' (\a'@((s', _), _) a@((s, _), _) -> if s > s' then a else a')
-    $ map (P1.getMaxGrid &&& id) [1 .. 299]
+    .   (\((x, y), es) -> (x, y, fst . maximumBy (comparing snd) $ es))
+    .   maximumBy (comparing (maximum . map snd . snd))
+    $   (\x y -> ((x, y), [0 ..] `zip` P1.subGridEnergies (x, y)))
+    <$> [1 .. 300]
+    <*> [1 .. 300]

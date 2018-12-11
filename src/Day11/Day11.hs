@@ -1,8 +1,8 @@
 module Day11.Day11 where
 
 import           Util.IO
-import qualified Day11.Problem1                 as P1
-import qualified Day11.Problem2                 as P2
+import           Day11.Problem1                as P1
+import           Day11.Problem2                as P2
 
 main :: IO ()
 main = do
