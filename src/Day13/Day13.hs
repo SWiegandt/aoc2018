@@ -8,7 +8,6 @@ import           Data.Ord
 import           Control.Monad.Trans.State.Strict
 import           Control.Monad.Loops
 import           Control.Monad
-import           Debug.Trace
 
 type Coordinate = (Int, Int)
 type Velocity = (Int, Int)
@@ -37,14 +36,10 @@ instance Show TrackPrinter where
         let
             maxX = maximum . map fst . M.keys $ track
             maxY = maximum . map snd . M.keys $ track
+            row y =
+                concatMap (\x -> maybe " " show (track M.!? (x, y))) [0 .. maxX]
         in
-            concatMap
-                (\y ->
-                    concatMap (\x -> maybe " " show (track M.!? (x, y)))
-                              [0 .. maxX]
-                        ++ "\n"
-                )
-                [0 .. maxY]
+            concatMap ((++ "\n") . row) [0 .. maxY]
 
 parseCart :: Char -> Coordinate -> Maybe Rail
 parseCart '<' c = Just $ Cart (-1, 0) (Rail (Straight H) c) 0
@@ -98,9 +93,9 @@ moveIntersection :: Rail -> State Track (Maybe Coordinate)
 moveIntersection (Cart v@(vx, vy) (Rail p r@(x, y)) i) = do
     t <- get
     let v'@(vx', vy') = case i of
-            0 -> (vy, vx)
+            0 -> (vy, negate vx)
             1 -> v
-            2 -> (negate vy, negate vx)
+            2 -> (negate vy, vx)
         r'@(x', y') = (x + vx', y + vy')
     executeMove (r, Rail p r) (r', Cart v' (t M.! r') ((i + 1) `mod` 3))
 
@@ -110,12 +105,17 @@ executeMove
     -> State Track (Maybe Coordinate)
 executeMove (c, r) (c', r') = do
     track <- get
-    if isCart $ track M.! c'
-        then trace (show . TrackPrinter $ track) . return $ Just c'
-        else do
-            modify (M.insert c r)
-            modify (M.insert c' r')
-            return Nothing
+    if not $ isCart (track M.! c)
+        then return Nothing
+        else if isCart (rail r')
+            then do
+                modify (M.insert c r)
+                modify (M.insert c' (rail . rail $ r'))
+                return $ Just c'
+            else do
+                modify (M.insert c r)
+                modify (M.insert c' r')
+                return Nothing
 
 moveCarts :: State Track (Maybe Coordinate)
 moveCarts = do
@@ -131,4 +131,13 @@ moveCarts = do
 main :: IO ()
 main = do
     track <- parseTrack <$> getInput 13
+
+    -- part 1
     printWithTime . evalState (iterateUntil isJust moveCarts) $ track
+
+    -- part 2
+    let singleCartLeft = (<= 1) . M.size . M.filter isCart <$> get
+    printWithTime
+        . M.filter isCart
+        . execState (untilM moveCarts singleCartLeft)
+        $ track
