@@ -14,6 +14,7 @@ import qualified Day10.Day10                   as Day10
 import qualified Day11.Day11                   as Day11
 import qualified Day12.Day12                   as Day12
 import qualified Day13.Day13                   as Day13
+import qualified Day14.Day14                   as Day14
 
 main :: IO ()
 main = do
@@ -33,4 +34,5 @@ main = do
         11 -> Day11.main
         12 -> Day12.main
         13 -> Day13.main
+        14 -> Day14.main
         _  -> error "Day not yet implemented!"
