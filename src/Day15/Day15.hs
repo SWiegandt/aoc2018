@@ -9,11 +9,9 @@ import           Control.Arrow
 import           Control.Monad.Trans.State.Strict
 import           Control.Monad
 import           Control.Monad.Loops
-import           Control.Monad.IO.Class
 import           Data.Maybe
 import           Data.Ord
 import           Data.List
-import           Debug.Trace
 import           Data.Function
 
 data Block = Empty | Wall deriving Eq
@@ -82,8 +80,7 @@ targets :: GameState -> Unit -> GameMap Unit
 targets (GameState _ units _) unit = M.filter (isEnemy unit) units
 
 isNeighbor :: Coordinate -> Coordinate -> Bool
-isNeighbor (x, y) (x', y') =
-    (x == x' || y == y') && (abs (x - x') + abs (y - y')) == 1
+isNeighbor (x, y) (x', y') = abs (x - x') + abs (y - y') == 1
 
 inRange :: Unit -> GameState -> [Coordinate]
 inRange unit st@(GameState blocks _ _) =
@@ -128,7 +125,6 @@ playRound = do
     gs@(GameState blocks' units' _) <- get
     when (and enemiesAlive) $ put (GameState blocks' units' (round + 1))
     let aliveElves' = M.size . M.filter ((== Elf) . unitType) $ units'
-    -- traceShowM gs
     return (aliveElves - aliveElves')
 
 isOver :: State GameState Bool
@@ -144,16 +140,17 @@ unitTurn hasMoved (pos, unit) = do
 
     if stillAlive
         then do
+            unit'          <- (M.! pos) . units <$> get
             enemyPositions <- M.keys . M.filter (isEnemy unit) . units <$> get
             if null enemyPositions
                 then return False
                 else if any (isNeighbor pos) enemyPositions
-                    then unitAttack pos unit >> return True
+                    then unitAttack pos unit' >> return True
                     else if not hasMoved
                         then do
-                            enemyRanges <- inRange unit <$> get
-                            newPos      <- unitMove pos enemyRanges unit
-                            unitTurn True (newPos, unit)
+                            enemyRanges <- inRange unit' <$> get
+                            newPos      <- unitMove pos enemyRanges unit'
+                            unitTurn True (newPos, unit')
                         else return True
         else return True
 
@@ -171,7 +168,8 @@ unitAttack pos unit = do
 attackUnit :: GameMap Unit -> (Coordinate, Unit) -> Int -> GameMap Unit
 attackUnit units (pos, unit) power =
     let unit' = decreaseHp power unit
-    in  if hp unit' <= 0 then M.delete pos units else M.insert pos unit' units
+    in  M.filter ((> 0) . hp)
+        $ M.insert pos unit' units
 
 unitMove :: Coordinate -> [Coordinate] -> Unit -> State GameState Coordinate
 unitMove from inRangePositions unit = do
@@ -179,8 +177,6 @@ unitMove from inRangePositions unit = do
     let distances = mapMaybe
             (\to -> (to, ) <$> snd (reachableIn gs from to))
             inRangePositions
-    -- traceShowM inRangePositions
-    -- traceShowM distances
     if null distances
         then return from
         else do
@@ -198,34 +194,21 @@ unitMove from inRangePositions unit = do
                     comparing (fromJust . snd) <> (readingOrder `on` fst)
             let (pos', _) = minimumBy unitOrder reachables
             let units'    = M.insert pos' unit . M.delete from $ units
-            -- traceM
-            --     (  "moving unit "
-            --     ++ show unit
-            --     ++ " from "
-            --     ++ show from
-            --     ++ " to "
-            --     ++ show pos'
-            --     ++ " (closest is "
-            --     ++ show closest
-            --     ++ ")"
-            --     )
             put (GameState blocks units' rounds)
             return pos'
 
 main :: IO ()
 main = do
     -- part 1
-    -- input <- parseGame 3 <$> getInput 15
-    -- let GameState _ units rounds = execState (untilM_ playRound isOver) input
-    -- printWithTime $ rounds * sum (M.map hp units)
+    input <- parseGame 3 <$> getInput 15
+    let GameState _ units rounds = execState (untilM_ playRound isOver) input
+    printWithTime $ rounds * sum (M.map hp units)
 
-    -- -- part 2
-    forM_ [15 ..] $ \power -> do
+    -- part 2
+    forM_ [16 ..] $ \power -> do
         input <- parseGame power <$> getInput 15
         let (deaths, GameState _ units rounds) =
                 runState (untilM playRound isOver) input
         unless (any (> 0) deaths) $ do
             print power
-            print rounds
-            print $ M.map hp units
             print $ rounds * sum (M.map hp units)
