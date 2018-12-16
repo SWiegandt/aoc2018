@@ -10,11 +10,11 @@ import           Data.Function
 import           Data.Maybe
 import           Control.Arrow
 
-newtype Input = Input (M.IntMap Int) deriving Show
-newtype Op = Op { def :: [Int] } deriving Show
-newtype Output = Output (M.IntMap Int) deriving (Show, Eq)
-data Sample = Sample { input :: Input, op :: Op, output :: Output } deriving Show
+type Input = M.IntMap Int
+type Op = [Int]
+type Output = M.IntMap Int
 type Opcode = Op -> Input -> Output
+data Sample = Sample { input :: Input, op :: Op, output :: Output } deriving Show
 
 parseSamples :: String -> [Sample]
 parseSamples s =
@@ -31,17 +31,17 @@ parseProgram s =
 parseSample :: String -> Sample
 parseSample s =
     let rows = splitOn "\n" s
-    in  Sample (parseInOut Input $ head rows)
+    in  Sample (parseInOut $ head rows)
                (parseOp $ rows !! 1)
-               (parseInOut Output $ rows !! 2)
+               (parseInOut $ rows !! 2)
 
-parseInOut :: (M.IntMap Int -> a) -> String -> a
-parseInOut cons s =
+parseInOut :: String -> M.IntMap Int
+parseInOut s =
     let nums = filter isDigit s
-    in  cons (M.fromList . zip [0 ..] $ map digitToInt nums)
+    in  M.fromList . zip [0 ..] $ map digitToInt nums
 
 parseOp :: String -> Op
-parseOp = Op . map read . words
+parseOp = map read . words
 
 runOp
     :: Op
@@ -50,17 +50,17 @@ runOp
     -> (Int -> Int -> Int)
     -> Input
     -> Output
-runOp (Op [_, a, b, c]) f g action (Input i) =
-    Output $ M.insert c (fromMaybe 0 (f a) `action` fromMaybe 0 (g b)) i
+runOp [_, a, b, c] f g action =
+    M.insert c (fromMaybe 0 (f a) `action` fromMaybe 0 (g b))
 
 rrOp :: (Int -> Int -> Int) -> Op -> Input -> Output
-rrOp f op input@(Input i) = runOp op (i M.!?) (i M.!?) f input
+rrOp f op input = runOp op (input M.!?) (input M.!?) f input
 
 riOp :: (Int -> Int -> Int) -> Op -> Input -> Output
-riOp f op input@(Input i) = runOp op (i M.!?) Just f input
+riOp f op input = runOp op (input M.!?) Just f input
 
 irOp :: (Int -> Int -> Int) -> Op -> Input -> Output
-irOp f op input@(Input i) = runOp op Just (i M.!?) f input
+irOp f op input = runOp op Just (input M.!?) f input
 
 addr = rrOp (+)
 addi = riOp (+)
@@ -97,10 +97,7 @@ identifyGroup ops opCode samples =
     )
 
 applyOp :: [Opcode] -> M.IntMap Int -> Op -> M.IntMap Int
-applyOp ops input op@(Op [a, _, _, _]) =
-    let opCode        = ops !! a
-        Output output = opCode op (Input input)
-    in  output
+applyOp ops input op@[a, _, _, _] = (ops !! a) op input
 
 main :: IO ()
 main = do
@@ -129,7 +126,7 @@ main = do
     printWithTime . length . filter ((>= 3) . length . filter id) $ applied
 
     -- part 2
-    let toOpCode = head . def . op
+    let toOpCode = head . op
     let opCodeGroups =
             zip [0 ..]
                 . groupBy ((==) `on` toOpCode)
