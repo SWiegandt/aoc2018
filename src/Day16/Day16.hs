@@ -72,12 +72,14 @@ borr = rrOp (.|.)
 bori = riOp (.|.)
 setr = rrOp const
 seti = irOp const
-gtir = irOp (\a b -> if a > b then 1 else 0)
-gtri = riOp (\a b -> if a > b then 1 else 0)
-gtrr = rrOp (\a b -> if a > b then 1 else 0)
-eqir = irOp (\a b -> if a == b then 1 else 0)
-eqri = riOp (\a b -> if a == b then 1 else 0)
-eqrr = rrOp (\a b -> if a == b then 1 else 0)
+gt a b = fromEnum (a > b)
+gtir = irOp gt
+gtri = riOp gt
+gtrr = rrOp gt
+eq a b = fromEnum (a == b)
+eqir = irOp eq
+eqri = riOp eq
+eqrr = rrOp eq
 
 agreesWithOpcode :: Sample -> Opcode -> Bool
 agreesWithOpcode (Sample input op output) opCode = output == opCode op input
