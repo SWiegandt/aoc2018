@@ -8,7 +8,6 @@ import qualified Data.IntMap.Strict            as M
 import           Data.Bits
 import           Data.Function
 import           Data.Maybe
-import           Control.Arrow
 
 type Input = M.IntMap Int
 type Op = [Int]
